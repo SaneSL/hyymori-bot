@@ -30,7 +30,7 @@ class CustomCommands(commands.Cog):
                 return
 
             # Switch output for filename for audio files
-            if cmd_tuple[0] == 'audio':
+            if cmd_tuple[0] in ('audio', 'image'):
                 output = cmd_tuple[1]
             
             # Bad implementation

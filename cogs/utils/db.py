@@ -9,6 +9,14 @@ db = db_conn.table('commands')
 whitelist = db_conn.table('whitelist')
 
 
+def remove_command_attachments(cmd_type, fn):
+    fp = Path(__file__).parent.parent.absolute().joinpath(cmd_type, fn)
+
+    # missing_ok not in python 3.8
+    if Path(fp).exists():
+        Path(fp).unlink()
+
+
 def add_command_to_db(guild_id, command_name, output, command_type, creator):
     uses = 0
     db.insert(
@@ -26,10 +34,7 @@ def add_command_to_db(guild_id, command_name, output, command_type, creator):
     )
 
 
-def get_command(ctx):
-    guild_id = ctx.guild.id
-    command_name = ctx.invoked_with
-
+def get_command_from_db(guild_id, command_name):
     q = Query()
     res = db.search((q.guild_id == guild_id) & (q.command.name == command_name))
     return res or None
@@ -48,6 +53,13 @@ def command_exists(ctx):
 
 
 def remove_command_from_db(ctx, name):
+    res = get_command_from_db(ctx.guild.id, name)
+
+    if res is not None:
+        output = res[0]['command']['output']
+        cmd_type = res[0]['command']['type']
+        remove_command_attachments(cmd_type, output)
+
     guild_id = ctx.guild.id
 
     q = Query()

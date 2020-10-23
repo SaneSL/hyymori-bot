@@ -4,6 +4,7 @@ from discord.ext import commands
 from cogs.utils.db import add_to_db_whitelist, remove_from_db_whitelist
 
 
+
 class Admin(commands.Cog, command_attrs=dict(hidden=True)):
     def __init__(self, bot):
         self.bot = bot
