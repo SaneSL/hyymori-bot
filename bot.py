@@ -3,6 +3,8 @@ import discord
 import json
 
 from discord.ext import commands
+from cogs.utils.add_command import re_add_custom_command
+from cogs.utils.db import command_exists, load_whitelist
 
 
 def get_cfg():
@@ -20,29 +22,16 @@ class Huumori(commands.Bot):
         for filename in os.listdir("./cogs"):
             if filename.endswith(".py"):
                 name = filename[:-3]
+                if name == 'music':
+                    continue
                 self.load_extension(f"cogs.{name}")
-
-
-
-
-    def add_custom_command(self, ctx, name):
-
-        # Check for attachments
-        
-
-        @commands.command(name=name)
-        async def cmd(ctx):
-            await ctx.send("Tämä mämmi")
-
-        return cmd  
 
     async def get_context(self, message):
         ctx = await super().get_context(message)
 
-        # Try to add command if there isn't one
-        if ctx.command is None:
-            ctx.command = self.add_custom_command(ctx, name=ctx.invoked_with)
-
+        # Try to add command
+        if ctx.command is None and command_exists(ctx):
+            ctx.command = await re_add_custom_command(ctx)
 
         return ctx
 
@@ -62,17 +51,14 @@ class Huumori(commands.Bot):
             return
 
         await self.invoke(ctx)
-    
-    
+
 
 def run_bot():
     cfg = get_cfg()
 
     bot = Huumori(command_prefix=cfg['prefix'])
-    # commands = bot.commands
-
-    # for command in commands:
-    #     print(command.name)
+    
+    bot.whitelist = load_whitelist()
 
     bot.run(cfg['token'])
 

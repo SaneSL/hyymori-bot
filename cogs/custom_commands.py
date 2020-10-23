@@ -2,55 +2,50 @@ import discord
 from discord.ext import commands
 
 from cogs.utils.add_command import create_custom_command
+from cogs.utils.db import command_exists, add_command_to_db
 
 
 class CustomCommands(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-
-    #def check_attachment_type():
-        
-
-    _custom_commands = {}
-
     @commands.command()
     async def add_command(self, ctx, name, *, output=None):
-        print(output)
-        existing_command = self._custom_commands.get(name)
+        cmd_exists = command_exists(ctx)
+
+        if cmd_exists:
+            return await ctx.send("Komennon nimi on jo käytössä")
 
         # Don't allow overriding build ins
-        if existing_command is None and ctx.bot.get_command(name):
-            return await ctx.send(f"Tätä nimeä ei voi käyttää")
+        if ctx.bot.get_command(name):
+            return await ctx.send("Tätä nimeä ei voi käyttää")
 
-        # Overwrite old command
-        if existing_command:
-            self._custom_commands[name][ctx.guild.id] = output
+        # Overwrite old command - not done
             
         else:
-            cmd = await create_custom_command(ctx, name, output)
+            cmd, cmd_tuple = await create_custom_command(ctx, name, output)
+            
+            # Error in creating
+            if not cmd:
+                return
 
+            # Switch output for filename for audio files
+            if cmd_tuple[0] == 'audio':
+                output = cmd_tuple[1]
+            
+            # Bad implementation
+            cmd_type = cmd_tuple[0]
+            
             # This stuff might be usefull if all commands are under this
             # cmd.cog = self
             # And add it to the cog and the bot
             # self.__cog_commands__ = self.__cog_commands__ + (cmd,)
 
+            # Add command
             ctx.bot.add_command(cmd)
-            # Now add it to our list of custom commands
-            self._custom_commands[name] = {ctx.guild.id: output}
+            add_command_to_db(ctx.guild.id, name, output, cmd_type, ctx.author.display_name)
 
-        await ctx.send(f"Added a command called {name}")
-
-
-    # @commands.command()
-    # async def add(self, ctx):
-    #     attachments = ctx.message.attachments
-
-    #     if len(attachments) != 1:
-    #         return await ctx.send("Lisää max 1 liite")
-
-        
-
+        await ctx.send(f"Lisättiin komento: {name}")
 
 
 def setup(bot):

@@ -1,40 +1,40 @@
-import discord
-from discord.ext import commands
+# import discord
+# from discord.ext import commands
 
 
-class Music(commands.Cog):
-    def __init__(self, bot):
-        self.bot = bot
+# class Music(commands.Cog):
+#     def __init__(self, bot):
+#         self.bot = bot
 
-    @commands.command()
-    async def join(self, ctx):
-        channel = ctx.author.voice.channel
+#     @commands.command()
+#     async def join(self, ctx):
+#         channel = ctx.author.voice.channel
 
-        await channel.connect()
+#         await channel.connect()
 
-        # if ctx.voice_client is not None:
-        #     return await ctx.voice_client.move_to(channel)
+#         if ctx.voice_client is not None:
+#             return await ctx.voice_client.move_to(channel)
     
 
-    @commands.command()
-    async def play(self, ctx):
-        audio_source = discord.FFmpegPCMAudio('cogs/maisa.mp3')
-        ctx.voice_client.play(audio_source)
+#     @commands.command()
+#     async def play(self, ctx):
+#         audio_source = discord.FFmpegPCMAudio('cogs/maisa.mp3')
+#         ctx.voice_client.play(audio_source)
 
-        await ctx.send("Now playing maisa.mp3")
+#         await ctx.send("Now playing maisa.mp3")
     
-    @commands.command()
-    async def test(self, ctx):
-        await ctx.send("XD")
+#     @commands.command()
+#     async def test(self, ctx):
+#         await ctx.send("XD")
 
 
-    @commands.command()
-    async def cc(self, ctx):
-        commands = self.bot.commands
-        for command in commands:
-            print(command.name)
+#     @commands.command()
+#     async def cc(self, ctx):
+#         commands = self.bot.commands
+#         for command in commands:
+#             print(command.name)
 
     
 
-def setup(bot):
-    bot.add_cog(Music(bot))
+# def setup(bot):
+#     bot.add_cog(Music(bot))
