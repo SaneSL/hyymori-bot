@@ -136,3 +136,5 @@ dmypy.json
 # Own stuff
 config.json
 audiofiles
+db.json
+t.py

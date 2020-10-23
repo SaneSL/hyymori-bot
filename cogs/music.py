@@ -22,7 +22,19 @@ class Music(commands.Cog):
         ctx.voice_client.play(audio_source)
 
         await ctx.send("Now playing maisa.mp3")
+    
+    @commands.command()
+    async def test(self, ctx):
+        await ctx.send("XD")
 
+
+    @commands.command()
+    async def cc(self, ctx):
+        commands = self.bot.commands
+        for command in commands:
+            print(command.name)
+
+    
 
 def setup(bot):
     bot.add_cog(Music(bot))

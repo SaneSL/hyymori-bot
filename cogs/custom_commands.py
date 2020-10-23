@@ -1,14 +1,7 @@
 import discord
 from discord.ext import commands
 
-
-
-# The check to ensure this is the guild used where the command was made
-def guild_check(_custom_commands):
-    async def predicate(ctx):
-        return _custom_commands.get(ctx.command.qualified_name) and ctx.guild.id in _custom_commands.get(ctx.command.qualified_name)
-    return commands.check(predicate)
-
+from cogs.utils.add_command import create_custom_command
 
 
 class CustomCommands(commands.Cog):
@@ -16,10 +9,14 @@ class CustomCommands(commands.Cog):
         self.bot = bot
 
 
+    #def check_attachment_type():
+        
+
     _custom_commands = {}
 
     @commands.command()
-    async def add_command(self, ctx, name, *, output):
+    async def add_command(self, ctx, name, *, output=None):
+        print(output)
         existing_command = self._custom_commands.get(name)
 
         # Don't allow overriding build ins
@@ -31,15 +28,13 @@ class CustomCommands(commands.Cog):
             self._custom_commands[name][ctx.guild.id] = output
             
         else:
-            @commands.command(name=name)
-            @guild_check(self._custom_commands)
-            async def cmd(self, ctx):
-                await ctx.send(self._custom_commands[ctx.invoked_with][ctx.guild.id])
+            cmd = await create_custom_command(ctx, name, output)
 
-            cmd.cog = self
-
+            # This stuff might be usefull if all commands are under this
+            # cmd.cog = self
             # And add it to the cog and the bot
-            self.__cog_commands__ = self.__cog_commands__ + (cmd,)
+            # self.__cog_commands__ = self.__cog_commands__ + (cmd,)
+
             ctx.bot.add_command(cmd)
             # Now add it to our list of custom commands
             self._custom_commands[name] = {ctx.guild.id: output}
