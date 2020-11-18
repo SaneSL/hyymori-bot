@@ -3,8 +3,14 @@ import discord
 import json
 
 from discord.ext import commands
-from cogs.utils.add_command import re_add_custom_command
+from cogs.utils.command_factory import re_add_custom_command
 from cogs.utils.db import command_exists, load_whitelist
+from cogs.utils.customhelp import CustomHelpCommand
+
+"""
+TODO:
+
+"""
 
 
 def get_cfg():
@@ -30,7 +36,7 @@ class Huumori(commands.Bot):
         ctx = await super().get_context(message)
 
         # Try to add command
-        if ctx.command is None and command_exists(ctx):
+        if ctx.command is None and command_exists(ctx, ctx.invoked_with):
             ctx.command = await re_add_custom_command(ctx)
 
         return ctx
@@ -56,7 +62,7 @@ class Huumori(commands.Bot):
 def run_bot():
     cfg = get_cfg()
 
-    bot = Huumori(command_prefix=cfg['prefix'])
+    bot = Huumori(command_prefix=cfg['prefix'], help_command=CustomHelpCommand(prefixes=cfg['prefix']))
     
     bot.whitelist = load_whitelist()
 

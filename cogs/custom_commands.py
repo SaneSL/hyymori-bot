@@ -1,7 +1,7 @@
 import discord
 from discord.ext import commands
 
-from cogs.utils.add_command import create_custom_command
+from cogs.utils.command_factory import create_custom_command
 from cogs.utils.db import command_exists, add_command_to_db
 
 
@@ -11,7 +11,10 @@ class CustomCommands(commands.Cog):
 
     @commands.command()
     async def add_command(self, ctx, name, *, output=None):
-        cmd_exists = command_exists(ctx)
+        if len(name) > 20:
+            await ctx.send('Komennon pituus max 20 merkkiä')
+
+        cmd_exists = command_exists(ctx, name)
 
         if cmd_exists:
             return await ctx.send("Komennon nimi on jo käytössä")
@@ -46,6 +49,7 @@ class CustomCommands(commands.Cog):
             add_command_to_db(ctx.guild.id, name, output, cmd_type, ctx.author.display_name)
 
         await ctx.send(f"Lisättiin komento: {name}")
+        await ctx.message.delete()
 
 
 def setup(bot):

@@ -1,5 +1,6 @@
 from pathlib import Path
 from tinydb import TinyDB, Query
+from datetime import datetime
 
 
 db_path = str(Path(__file__).parent.absolute().joinpath('db.json'))
@@ -18,7 +19,7 @@ def remove_command_attachments(cmd_type, fn):
 
 
 def add_command_to_db(guild_id, command_name, output, command_type, creator):
-    uses = 0
+    timestamp = datetime.utcnow().timestamp()
     db.insert(
         {
             'guild_id': guild_id,
@@ -27,8 +28,8 @@ def add_command_to_db(guild_id, command_name, output, command_type, creator):
                     'name': command_name,
                     'type': command_type,
                     'creator': creator,
-                    'uses': uses,
-                    'output': output # Text or file if audio
+                    'output': output, # Text or file if audio
+                    'created': timestamp
                 }
         }
     )
@@ -40,9 +41,8 @@ def get_command_from_db(guild_id, command_name):
     return res or None
 
 
-def command_exists(ctx):
+def command_exists(ctx, command_name):
     guild_id = ctx.guild.id
-    command_name = ctx.invoked_with
 
     q = Query()
     res = db.search((q.guild_id == guild_id) & (q.command.name == command_name))
@@ -58,12 +58,23 @@ def remove_command_from_db(ctx, name):
     if res is not None:
         output = res[0]['command']['output']
         cmd_type = res[0]['command']['type']
-        remove_command_attachments(cmd_type, output)
+        
+        # Text commands don't have attachements
+        if cmd_type != 'text':
+            remove_command_attachments(cmd_type, output)
 
     guild_id = ctx.guild.id
 
     q = Query()
     res = db.remove((q.guild_id == guild_id) & (q.command.name == name))
+
+
+def get_all_commands_from_db(guild_id):
+    q = Query()
+
+    res = db.search(q.guild_id == guild_id)
+
+    return [elem['command']['name'] for elem in res]
 
 
 def add_to_db_whitelist(member_id):
@@ -76,10 +87,6 @@ def remove_from_db_whitelist(member_id):
     
 
 def load_whitelist():
+    # Add per guild
     res = whitelist.all()
-    
-    wl = []
-    for d in res:
-        wl.append(d['id'])
-
-    return wl
+    return [elem['id'] for elem in res]

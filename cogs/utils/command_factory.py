@@ -37,7 +37,6 @@ def create_audio_command(ctx, name, audio_fn):
             else:
                 await ctx.voice_client.move_to(channel)
 
-
             audio_fp = f"cogs/audio/{audio_fn}"
             audio_source = discord.FFmpegPCMAudio(audio_fp)
             ctx.voice_client.play(audio_source)
@@ -95,11 +94,17 @@ async def create_custom_command(ctx, name, output=None):
         return cmd, (cmd_type, None)
 
     if len(attachments) == 1:
+        # Check for too big attachements, bytes
+        if attachments[0].size > 1000000:
+            return await ctx.send('Liian iso liite max 1000 KB')
+
+
         fn = attachments[0].filename
         suffix = Path(fn).suffix
         new_fn = (name + suffix).lower()
 
         is_img = fn.lower().endswith(('.png', '.jpg', '.jpeg', '.tiff', '.bmp', '.gif'))
+
         if is_img:
             cmd, cmd_type = create_image_command(ctx, name, new_fn)
 
