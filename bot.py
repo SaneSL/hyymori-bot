@@ -1,6 +1,7 @@
 import os
 import discord
 import json
+import logging
 
 from discord.ext import commands
 from cogs.utils.command_factory import re_add_custom_command
@@ -11,6 +12,12 @@ from cogs.utils.customhelp import CustomHelpCommand
 TODO:
 
 """
+
+logger = logging.getLogger('discord')
+logger.setLevel(logging.DEBUG)
+handler = logging.FileHandler(filename='discord.log', encoding='utf-8', mode='w')
+handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s'))
+logger.addHandler(handler)
 
 
 def get_cfg():
