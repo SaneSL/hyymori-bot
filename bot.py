@@ -30,6 +30,8 @@ def get_cfg():
 class Huumori(commands.Bot):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
+
+        self.bot.log = logger
         
         # Load cogs
         for filename in os.listdir("./cogs"):
