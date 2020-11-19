@@ -13,10 +13,12 @@ class CustomHelpCommand(commands.DefaultHelpCommand):
         if command.name == 'help':
             return
 
-        if command.cog is None:
-            await ctx.send('Ei apuu...')
+        dest = self.get_destination()
 
-        
+        if command.cog is None:
+            await dest.send('Ei apuu...')
+            return
+
         embed = discord.Embed(
             title='Command: ' + command.name,
             colour=discord.Colour.gold()
@@ -38,13 +40,10 @@ class CustomHelpCommand(commands.DefaultHelpCommand):
                                                                          ' use quotation marks `""`'
         else:
             usage_value = '!' + command.name
-        
 
         embed.description = desc
         embed.add_field(name='Aliases', value=aliases, inline=True)
         embed.add_field(name='Usage', value=usage_value, inline=False)
-
-        dest = self.get_destination()
 
         await dest.send(embed=embed)
 
@@ -82,23 +81,26 @@ class CustomHelpCommand(commands.DefaultHelpCommand):
 
                 cmd_string = '\n'.join(cmd_list)
                 embed.add_field(name=name, value=cmd_string)
-        
-        # Add user made commands
-        i = 1
-        custom_cmd_string = ''
-        for cmd in custom_cmd_list:
-            # Skip separator for last command
-            if i == len(custom_cmd_list):
-                custom_cmd_string += cmd
-            # 4 commands per row
-            elif i % 4 == 0:
-                custom_cmd_string += cmd + '\n'
-            # Command separator
-            else:
-                custom_cmd_string += cmd + '   ---   '
-            i += 1
+
+        if custom_cmd_list:
+            # Add user made commands
+            i = 1
+
+            custom_cmd_string = ''
+            for cmd in custom_cmd_list:
+                # Skip separator for last command
+                if i == len(custom_cmd_list):
+                    custom_cmd_string += cmd
+                # 4 commands per row
+                elif i % 4 == 0:
+                    custom_cmd_string += cmd + '\n'
+                # Command separator
+                else:
+                    custom_cmd_string += cmd + '   ---   '
+                i += 1
             
-        embed.add_field(name='User made', value=custom_cmd_string, inline=False)
+            embed.add_field(name='User made', value=custom_cmd_string, inline=False)
+
         embed.add_field(name='Prefixe(s)', value=self.prefixes, inline=False)
 
         await dest.send(embed=embed)

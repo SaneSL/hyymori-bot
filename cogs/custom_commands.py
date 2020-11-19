@@ -3,13 +3,14 @@ from discord.ext import commands
 
 from cogs.utils.command_factory import create_custom_command
 from cogs.utils.db import command_exists, add_command_to_db
+from cogs.utils.cmd import CommandData
 
 
 class CustomCommands(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.command()
+    @commands.command(aliases=['add'])
     async def add_command(self, ctx, name, *, output=None):
         if len(name) > 20:
             await ctx.send('Komennon pituus max 20 merkkiä')
@@ -26,18 +27,15 @@ class CustomCommands(commands.Cog):
         # Overwrite old command - not done
             
         else:
-            cmd, cmd_tuple = await create_custom_command(ctx, name, output)
+            cmd_data = await create_custom_command(ctx, name, output)
             
             # Error in creating
-            if not cmd:
+            if cmd_data is None:
                 return
 
-            # Switch output for filename for audio files
-            if cmd_tuple[0] in ('audio', 'image'):
-                output = cmd_tuple[1]
-            
-            # Bad implementation
-            cmd_type = cmd_tuple[0]
+            # Switch output for audio and images
+            if cmd_data.output is not None:
+                output = cmd_data.output
             
             # This stuff might be usefull if all commands are under this
             # cmd.cog = self
@@ -45,11 +43,11 @@ class CustomCommands(commands.Cog):
             # self.__cog_commands__ = self.__cog_commands__ + (cmd,)
 
             # Add command
-            ctx.bot.add_command(cmd)
-            add_command_to_db(ctx.guild.id, name, output, cmd_type, ctx.author.display_name)
+            ctx.bot.add_command(cmd_data.cmd)
+            add_command_to_db(ctx.guild.id, name, output, cmd_data.ctype, ctx.author.display_name)
 
         await ctx.send(f"Lisättiin komento: {name}")
-        await ctx.message.delete()
+        # await ctx.message.delete()
 
 
 def setup(bot):

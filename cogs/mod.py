@@ -8,7 +8,7 @@ class Mod(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.command()
+    @commands.command(aliases=['rem'])
     async def remove_command(self, ctx, name):
         removed = self.bot.remove_command(name)
 

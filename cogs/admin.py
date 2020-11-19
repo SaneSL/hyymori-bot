@@ -23,12 +23,6 @@ class Admin(commands.Cog, command_attrs=dict(hidden=True)):
 
         remove_from_db_whitelist(member.id)
 
-    @commands.command()
-    async def cc(self, ctx):
-        commands = self.bot.commands
-        for command in commands:
-            print(command.name)
-
     async def cog_check(self, ctx):
         return await self.bot.is_owner(ctx.author)
 

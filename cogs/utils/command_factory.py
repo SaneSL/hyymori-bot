@@ -2,7 +2,9 @@ import discord
 
 from discord.ext import commands
 from pathlib import Path
+
 from cogs.utils.db import get_command_from_db
+from cogs.utils.cmd import CommandData
 
 
 def create_text_command(name, content):
@@ -10,7 +12,7 @@ def create_text_command(name, content):
         async def cmd(ctx):
             await ctx.send(content)
 
-        return cmd, 'text'
+        return CommandData(cmd=cmd, ctype='text')
 
 
 def create_image_command(ctx, name, image_fn):
@@ -19,7 +21,8 @@ def create_image_command(ctx, name, image_fn):
         image_fp = f"cogs/image/{image_fn}"
         await ctx.send(file=discord.File(image_fp))
     
-    return cmd, 'image'
+
+    return CommandData(cmd=cmd, ctype='image')
 
 
 def create_audio_command(ctx, name, audio_fn):
@@ -41,7 +44,7 @@ def create_audio_command(ctx, name, audio_fn):
             audio_source = discord.FFmpegPCMAudio(audio_fp)
             ctx.voice_client.play(audio_source)
 
-        return cmd, 'audio'
+        return CommandData(cmd=cmd, ctype='audio')
 
 
 async def re_add_custom_command(ctx):
@@ -54,33 +57,32 @@ async def re_add_custom_command(ctx):
     if res is None:
         return
 
-    cmd = res[0]['command']
-    output = cmd['output']
-    cmd_type = cmd['type']
+    output = res[0]['command']['output']
+    cmd_type = res[0]['command']['type']
 
     if cmd_type == 'text':
-        cmd, cmd_type = create_text_command(name, output)
+        cmd_data = create_text_command(name, output)
 
         # Add command to bot
-        ctx.bot.add_command(cmd)
+        ctx.bot.add_command(cmd_data.cmd)
 
-        return cmd
+        return cmd_data.cmd
 
     elif cmd_type == 'audio':
-        cmd, cmd_type = create_audio_command(ctx, name, output)
+        cmd_data = create_audio_command(ctx, name, output)
         
         # Add command to bot
-        ctx.bot.add_command(cmd)
+        ctx.bot.add_command(cmd_data.cmd)
 
-        return cmd
+        return cmd_data.cmd
 
     elif cmd_type == 'image':
-        cmd, cmd_type = create_image_command(ctx, name, output)
+        cmd_data = create_image_command(ctx, name, output)
 
         # Add command to bot
-        ctx.bot.add_command(cmd)
+        ctx.bot.add_command(cmd_data.cmd)
 
-        return cmd
+        return cmd_data.cmd
 
 
 async def create_custom_command(ctx, name, output=None):
@@ -90,15 +92,15 @@ async def create_custom_command(ctx, name, output=None):
 
     # Text command
     if len(attachments) == 0 and output:
-        cmd, cmd_type = create_text_command(name, output)
-        return cmd, (cmd_type, None)
+        cmd_data = create_text_command(name, output)
+        return cmd_data
 
     if len(attachments) == 1:
         # Check for too big attachements, bytes
         if attachments[0].size > 1000000:
-            return await ctx.send('Liian iso liite max 1000 KB')
+            return await ctx.send('Liian iso liite, max 1000 KB')
 
-
+        # Create new name for the file based on command name
         fn = attachments[0].filename
         suffix = Path(fn).suffix
         new_fn = (name + suffix).lower()
@@ -106,18 +108,16 @@ async def create_custom_command(ctx, name, output=None):
         is_img = fn.lower().endswith(('.png', '.jpg', '.jpeg', '.tiff', '.bmp', '.gif'))
 
         if is_img:
-            cmd, cmd_type = create_image_command(ctx, name, new_fn)
+            cmd_data = create_image_command(ctx, name, new_fn)
 
             # Save file
             new_fp = Path(__file__).parent.parent.absolute().joinpath('image', new_fn)
             await attachments[0].save(new_fp)
 
-            return cmd, (cmd_type, new_fn)
-        else:
-            fn = attachments[0].filename
-            suffix = Path(fn).suffix
-            new_fn = (name + suffix).lower()
+            cmd_data.output = new_fn
 
+            return cmd_data
+        else:
             # Check file type, only mp3 allowed
             if suffix not in ('.mp3'):
                 return await ctx.send("Vain .mp3 liitteet sallittu")
@@ -126,11 +126,11 @@ async def create_custom_command(ctx, name, output=None):
             new_fp = Path(__file__).parent.parent.absolute().joinpath('audio', new_fn)
             await attachments[0].save(new_fp)
 
-            cmd, cmd_type = create_audio_command(ctx, name, new_fn)
+            cmd_data = create_audio_command(ctx, name, new_fn)
 
-            # Create new tuple to add fn
-            return cmd, (cmd_type, new_fn)
+            cmd_data.output = new_fn
+            return cmd_data
 
     else:
         await ctx.send("Lisää max 1 liite tai joku muu virhe")
-        return False, False
+        return None

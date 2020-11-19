@@ -31,14 +31,14 @@ class Huumori(commands.Bot):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
-        self.bot.log = logger
+        self.log = logger
         
         # Load cogs
         for filename in os.listdir("./cogs"):
             if filename.endswith(".py"):
                 name = filename[:-3]
-                if name == 'music':
-                    continue
+                # if name in ('music'):
+                #     continue
                 self.load_extension(f"cogs.{name}")
 
     async def get_context(self, message):
