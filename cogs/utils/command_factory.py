@@ -1,4 +1,5 @@
 import discord
+import asyncio
 
 from discord.ext import commands
 from pathlib import Path
@@ -30,15 +31,28 @@ def create_audio_command(ctx, name, audio_fn):
         async def cmd(ctx):
             # Invoker not in voice
             if ctx.author.voice is None:
+                await ctx.send("Ääni komento. Sun pitää olla kannulla bro", delete_after=5)
                 return
 
             channel = ctx.author.voice.channel
+            vc = ctx.voice_client
 
-            # Bot not in voice
-            if ctx.voice_client is None:
-                await channel.connect(reconnect=True)
+            if vc:
+                # Bot is not in invokers channel
+                if vc.channel.id != channel.id:
+                    try:
+                        await vc.move_to(channel)
+                    except asyncio.TimeoutError:
+                        raise VoiceConnectionError(f'Moving to channel: <{channel}> timed out.')
             else:
-                await ctx.voice_client.move_to(channel)
+                try:
+                    await channel.connect()
+                except asyncio.TimeoutError:
+                    raise VoiceConnectionError(f'Connecting to channel: <{channel}> timed out.')
+            
+            # If playing, move to other channel, but don't play anything
+            if ctx.voice_client.is_playing():
+                return
 
             audio_fp = f"cogs/audio/{audio_fn}"
             audio_source = discord.FFmpegPCMAudio(audio_fp)

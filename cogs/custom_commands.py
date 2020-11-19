@@ -12,6 +12,8 @@ class CustomCommands(commands.Cog):
 
     @commands.command(aliases=['add'])
     async def add_command(self, ctx, name, *, output=None):
+        name = name.lower()
+
         if len(name) > 20:
             await ctx.send('Komennon pituus max 20 merkkiä')
 
@@ -46,8 +48,16 @@ class CustomCommands(commands.Cog):
             ctx.bot.add_command(cmd_data.cmd)
             add_command_to_db(ctx.guild.id, name, output, cmd_data.ctype, ctx.author.display_name)
 
-        await ctx.send(f"Lisättiin komento: {name}")
-        # await ctx.message.delete()
+        await ctx.send(f"Lisättiin komento: {name}", delete_after=5)
+        await ctx.message.delete(delay=5)
+
+    @commands.command(aliases=['rm'])
+    async def remove_command(self, ctx, name):
+        removed = self.bot.remove_command(name)
+
+        remove_command_from_db(ctx, name)
+
+        await ctx.send(f"Poistettiin komento: {name}", delete_after=5)
 
 
 def setup(bot):
