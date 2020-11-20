@@ -37,8 +37,8 @@ class Huumori(commands.Bot):
         for filename in os.listdir("./cogs"):
             if filename.endswith(".py"):
                 name = filename[:-3]
-                # if name in ('music'):
-                #     continue
+                if name in ('events'):
+                    continue
                 self.load_extension(f"cogs.{name}")
 
     async def get_context(self, message):

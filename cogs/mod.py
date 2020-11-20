@@ -1,7 +1,6 @@
 import discord
 from discord.ext import commands
 
-from cogs.utils.db import remove_command_from_db
 
 
 class Mod(commands.Cog):

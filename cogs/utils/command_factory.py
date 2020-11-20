@@ -41,7 +41,10 @@ def create_audio_command(ctx, name, audio_fn):
                 # Bot is not in invokers channel
                 if vc.channel.id != channel.id:
                     try:
-                        await vc.move_to(channel)
+                        # await vc.move_to(channel)
+                        await vc.disconnect()
+                        await channel.connect()
+
                     except asyncio.TimeoutError:
                         raise VoiceConnectionError(f'Moving to channel: <{channel}> timed out.')
             else:

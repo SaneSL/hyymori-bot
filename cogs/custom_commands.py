@@ -4,6 +4,7 @@ from discord.ext import commands
 from cogs.utils.command_factory import create_custom_command
 from cogs.utils.db import command_exists, add_command_to_db
 from cogs.utils.cmd import CommandData
+from cogs.utils.db import remove_command_from_db
 
 
 class CustomCommands(commands.Cog):
@@ -51,7 +52,7 @@ class CustomCommands(commands.Cog):
         await ctx.send(f"Lisättiin komento: {name}", delete_after=5)
         await ctx.message.delete(delay=5)
 
-    @commands.command(aliases=['rm'])
+    @commands.command(aliases=['rm', 'rem'])
     async def remove_command(self, ctx, name):
         removed = self.bot.remove_command(name)
 
