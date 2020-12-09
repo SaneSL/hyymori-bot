@@ -16,7 +16,7 @@ class CustomCommands(commands.Cog):
         name = name.lower()
 
         if len(name) > 20:
-            await ctx.send('Komennon pituus max 20 merkkiä')
+            return await ctx.send('Komennon pituus max 20 merkkiä')
 
         cmd_exists = command_exists(ctx, name)
 
