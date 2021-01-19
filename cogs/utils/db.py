@@ -1,3 +1,5 @@
+import random
+
 from pathlib import Path
 from tinydb import TinyDB, Query
 from datetime import datetime
@@ -29,12 +31,14 @@ def add_command_to_db(guild_id, command_name, output, command_type, creator):
                     'type': command_type,
                     'creator': creator,
                     'output': output, # Text or file if audio
-                    'created': timestamp
+                    'created': timestamp,
+                    'count': 0
                 }
         }
     )
 
 
+# Note that this retunrs list with 1 element so res[0]
 def get_command_from_db(guild_id, command_name):
     q = Query()
     res = db.search((q.guild_id == guild_id) & (q.command.name == command_name))
@@ -48,6 +52,20 @@ def command_exists(ctx, command_name):
     res = db.search((q.guild_id == guild_id) & (q.command.name == command_name))
     if res:
         return True
+    else:
+        return False
+
+def incr_command_count(ctx, command_name):
+    guild_id = ctx.guild.id
+    q = Query()
+
+    res = db.search((q.guild_id == guild_id) & (q.command.name == command_name))
+
+    if res:
+        res = res[0]
+        res['command']['count'] += 1
+        db.update(res, q.command.name == res["command"]["name"])
+
     else:
         return False
 
@@ -77,6 +95,35 @@ def get_all_commands_from_db(guild_id):
     return [elem['command']['name'] for elem in res]
 
 
+# Server hard coded due to commands being in db
+# To avoid this all commands could be loaded on_ready
+def get_random_command_name_from_db(guild_id=537996694512730123):
+    q = Query()
+
+    all_commands = db.search(q.guild_id == guild_id)
+
+    pick = random.choice(all_commands)
+
+    return pick['command']['name']
+    
+
+def get_top_x_commands_from_db(guild_id, amount=7):
+    q = Query()
+
+    all_commands = db.search(q.guild_id == guild_id)
+
+    s = sorted(all_commands, key=lambda k: k['command']['count'], reverse=True)
+
+    top = s[:amount]
+
+    res = []
+
+    for item in top:
+        res.append((item['command']['name'], item['command']['count']))
+
+    return res
+
+
 def add_to_db_whitelist(member_id):
     whitelist.insert({'id': member_id})
 
@@ -90,3 +137,4 @@ def load_whitelist():
     # Add per guild
     res = whitelist.all()
     return [elem['id'] for elem in res]
+

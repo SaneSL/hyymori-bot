@@ -1,6 +1,6 @@
 import discord
 
-from cogs.utils.db import get_command_from_db
+from cogs.utils.db import get_command_from_db, get_random_command_name_from_db, get_top_x_commands_from_db
 from pydub import AudioSegment
 from discord.ext import commands
 
@@ -12,6 +12,42 @@ class Misc(commands.Cog):
     @commands.command()
     async def ohjeet(self, ctx):
         await ctx.send(file=discord.File('ohjeet.png'))
+
+    @commands.command()
+    async def random(self, ctx):
+        return
+
+        # r_command_name = get_random_command_name_from_db(ctx.guild.id)
+
+        # msg = ctx.message
+
+        # ctx.
+
+        # await self.bot.process_commands()
+    
+    @commands.command()
+    async def top(self, ctx):
+        name_count_pairs = get_top_x_commands_from_db(ctx.guild.id)
+
+        embed = discord.Embed(
+            title="Top 7",
+            colour=discord.Colour.dark_magenta()
+        )
+
+        cmd_string = ""
+
+        for p in name_count_pairs:
+            name = p[0]
+            count = p[1]
+
+            f = str(name) + ":" + str(count) + "\n"
+
+            cmd_string += f
+
+        embed.add_field(name='Commands', value=cmd_string)
+
+        await ctx.send(embed=embed)
+
 
     @commands.command()
     async def editvol(self, ctx, cmd_name, db):

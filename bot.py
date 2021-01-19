@@ -5,7 +5,7 @@ import logging
 
 from discord.ext import commands
 from cogs.utils.command_factory import re_add_custom_command
-from cogs.utils.db import command_exists, load_whitelist
+from cogs.utils.db import command_exists, load_whitelist, incr_command_count, get_random_command_name_from_db
 from cogs.utils.customhelp import CustomHelpCommand
 
 """
@@ -51,6 +51,10 @@ class Huumori(commands.Bot):
         return ctx
 
     async def process_commands(self, message):
+        if message.content == '!random':
+            r = get_random_command_name_from_db()
+            message.content = '!' + r
+
         ctx = await self.get_context(message)
         author_id = message.author.id
 
@@ -66,6 +70,8 @@ class Huumori(commands.Bot):
             return
 
         await self.invoke(ctx)
+
+        incr_command_count(ctx, ctx.command.name)
 
 
 def run_bot():
