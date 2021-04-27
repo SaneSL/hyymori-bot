@@ -1,3 +1,4 @@
+from cogs.utils.errors import VoiceConnectionError
 import discord
 import asyncio
 
@@ -58,6 +59,7 @@ def create_audio_command(ctx, name, audio_fn):
                 return
 
             audio_fp = f"cogs/audio/{audio_fn}"
+
             audio_source = discord.FFmpegPCMAudio(audio_fp)
             ctx.voice_client.play(audio_source)
 

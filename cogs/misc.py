@@ -1,9 +1,8 @@
 import discord
 
-from cogs.utils.db import get_command_from_db, get_random_command_name_from_db, get_top_x_commands_from_db
+from cogs.utils.db import get_all_commands_from_db, get_command_from_db, get_random_command_name_from_db, get_top_x_commands_from_db, remove_entry_from_db, upsert_to_entry
 from pydub import AudioSegment
 from discord.ext import commands
-
 
 class Misc(commands.Cog):
     def __init__(self, bot):
@@ -79,7 +78,22 @@ class Misc(commands.Cog):
         msg = f"{cmd_name} {str(db)} dB"
 
         await ctx.send(msg, delete_after=5)
-        
+
+    @commands.command()
+    async def add_entry(self, ctx, command_name):
+        r = upsert_to_entry(ctx.author, command_name)
+
+        if r is False:
+            await ctx.send("Tämän nimistä komentoa ei ole olemassa.")
+        else:
+            await ctx.send("Entry lisätty!")
+
+    @commands.command(aliases=['rm_entry'])
+    async def remove_entry(self, ctx):
+        remove_entry_from_db(ctx.author)
+
+        await ctx.send("Poistettiin entry!")
+
 
 def setup(bot):
     bot.add_cog(Misc(bot))

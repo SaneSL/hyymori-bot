@@ -10,6 +10,7 @@ from cogs.utils.customhelp import CustomHelpCommand
 
 """
 TODO:
+Create audio file folder if not exists
 
 """
 
@@ -37,8 +38,8 @@ class Huumori(commands.Bot):
         for filename in os.listdir("./cogs"):
             if filename.endswith(".py"):
                 name = filename[:-3]
-                if name in ('events'):
-                    continue
+                # if name in ('errorhandler'):
+                #     continue
                 self.load_extension(f"cogs.{name}")
 
     async def get_context(self, message):

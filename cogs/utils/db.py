@@ -10,6 +10,8 @@ db_conn = TinyDB(db_path)
 
 db = db_conn.table('commands')
 whitelist = db_conn.table('whitelist')
+entry = db_conn.table('entry')
+
 
 
 def remove_command_attachments(cmd_type, fn):
@@ -41,6 +43,7 @@ def add_command_to_db(guild_id, command_name, output, command_type, creator):
 # Note that this retunrs list with 1 element so res[0]
 def get_command_from_db(guild_id, command_name):
     q = Query()
+    
     res = db.search((q.guild_id == guild_id) & (q.command.name == command_name))
     return res or None
 
@@ -133,8 +136,43 @@ def remove_from_db_whitelist(member_id):
     whitelist.remove(q.id == member_id)
     
 
+def upsert_to_entry(member, command):
+    q = Query()
+    guild_id = member.guild.id
+    member_id = member.id
+
+    # Check if valid command¨
+
+    all_commands = get_all_commands_from_db(guild_id)
+
+    if command not in all_commands:
+        return False
+
+    entry.upsert({'guild_id': guild_id, 'member_id': member_id, 'audio_fn': command}, (q.guild_id == guild_id) & (q.member_id == member.id))
+
+    return True
+
+def get_entry_from_db(member):
+    q = Query()
+    guild_id = member.guild.id
+    member_id = member.id
+
+    res = entry.search((q.guild_id == guild_id) & (q.member_id == member_id))
+
+    if not res:
+        return None
+    else:
+        return res[0]['audio_fn']
+
+def remove_entry_from_db(member):
+    q = Query()
+    guild_id = member.guild.id
+    member_id = member.id
+
+    entry.remove((q.guild_id == guild_id) & (q.member_id == member_id))
+
+
 def load_whitelist():
     # Add per guild
     res = whitelist.all()
     return [elem['id'] for elem in res]
-
